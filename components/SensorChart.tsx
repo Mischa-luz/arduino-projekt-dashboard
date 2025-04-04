@@ -15,9 +15,14 @@ type ChartType = "temperature" | "humidity";
 interface SensorChartProps {
 	data: SensorData[];
 	type: ChartType;
+	maxDataPoints?: number; // Optional prop to customize the maximum data points
 }
 
-const SensorChart: React.FC<SensorChartProps> = ({ data, type }) => {
+const SensorChart: React.FC<SensorChartProps> = ({
+	data,
+	type,
+	maxDataPoints = 30, // Default to 30 data points for clean visualization
+}) => {
 	const isTemperature = type === "temperature";
 	const dataKey = isTemperature ? "temperature" : "humidity";
 	const label = isTemperature ? "Temperature (°C)" : "Humidity (%)";
@@ -39,8 +44,24 @@ const SensorChart: React.FC<SensorChartProps> = ({ data, type }) => {
 		);
 	}
 
-	// Format dates for better display and reverse the array to display from left to right
-	const formatData = validData.map((item) => ({
+	// Sample data if we have more than maxDataPoints
+	const sampleData = () => {
+		if (validData.length <= maxDataPoints) {
+			return validData; // Return all data if it's less than maxDataPoints
+		}
+
+		// Always include the most recent data points by taking the last maxDataPoints items
+		return validData.slice(-maxDataPoints);
+
+		// Alternative method: Sampling across the entire dataset
+		// const interval = Math.ceil(validData.length / maxDataPoints);
+		// return validData.filter((_, index) => index % interval === 0).slice(0, maxDataPoints);
+	};
+
+	const sampledData = sampleData();
+
+	// Format dates for better display
+	const formatData = sampledData.map((item) => ({
 		...item,
 		formattedTime: new Date(item.timestamp).toLocaleTimeString([], {
 			hour: "2-digit",
@@ -65,6 +86,7 @@ const SensorChart: React.FC<SensorChartProps> = ({ data, type }) => {
 					angle={-45}
 					textAnchor="end"
 					height={60}
+					tickCount={10}
 				/>
 				<YAxis />
 				<Tooltip
