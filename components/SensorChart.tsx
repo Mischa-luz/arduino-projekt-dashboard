@@ -40,15 +40,13 @@ const SensorChart: React.FC<SensorChartProps> = ({ data, type }) => {
 	}
 
 	// Format dates for better display and reverse the array to display from left to right
-	const formatData = validData
-		.map((item) => ({
-			...item,
-			formattedTime: new Date(item.timestamp).toLocaleTimeString([], {
-				hour: "2-digit",
-				minute: "2-digit",
-			}),
-		}))
-		.reverse();
+	const formatData = validData.map((item) => ({
+		...item,
+		formattedTime: new Date(item.timestamp).toLocaleTimeString([], {
+			hour: "2-digit",
+			minute: "2-digit",
+		}),
+	}));
 
 	return (
 		<ResponsiveContainer width="100%" height={300}>

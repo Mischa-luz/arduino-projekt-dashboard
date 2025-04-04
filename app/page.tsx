@@ -26,7 +26,7 @@ export default function Home() {
 					setError("No data available from sensors");
 				}
 
-				setData(sensorData);
+				setData(sensorData.reverse());
 				setLoading(false);
 			} catch (error) {
 				console.error("Failed to fetch sensor data:", error);
