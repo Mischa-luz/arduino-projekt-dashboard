@@ -21,7 +21,7 @@ interface SensorChartProps {
 const SensorChart: React.FC<SensorChartProps> = ({
 	data,
 	type,
-	maxDataPoints = 30, // Default to 30 data points for clean visualization
+	maxDataPoints = 8, // Default to 30 data points for clean visualization
 }) => {
 	const isTemperature = type === "temperature";
 	const dataKey = isTemperature ? "temperature" : "humidity";
