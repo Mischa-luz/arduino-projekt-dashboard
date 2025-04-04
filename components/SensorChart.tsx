@@ -15,13 +15,13 @@ type ChartType = "temperature" | "humidity";
 interface SensorChartProps {
 	data: SensorData[];
 	type: ChartType;
-	maxDataPoints?: number; // Optional prop to customize the maximum data points
+	maxLabelCount?: number; // Renamed to maxLabelCount to better reflect its purpose
 }
 
 const SensorChart: React.FC<SensorChartProps> = ({
 	data,
 	type,
-	maxDataPoints = 8, // Default to 30 data points for clean visualization
+	maxLabelCount = 4, // Default to 8 labels for clean visualization
 }) => {
 	const isTemperature = type === "temperature";
 	const dataKey = isTemperature ? "temperature" : "humidity";
@@ -43,35 +43,39 @@ const SensorChart: React.FC<SensorChartProps> = ({
 	if (validData.length < 2) {
 		return (
 			<div className="flex justify-center items-center h-64">
-				<p className="text-gray-500">Not enough data points to display chart</p>
+				<p className="text-gray-500 dark:text-gray-400">
+					Not enough data points to display chart
+				</p>
 			</div>
 		);
 	}
 
-	// Sample data if we have more than maxDataPoints
-	const sampleData = () => {
-		if (validData.length <= maxDataPoints) {
-			return validData; // Return all data if it's less than maxDataPoints
-		}
-
-		// Always include the most recent data points by taking the last maxDataPoints items
-		return validData.slice(-maxDataPoints);
-
-		// Alternative method: Sampling across the entire dataset
-		// const interval = Math.ceil(validData.length / maxDataPoints);
-		// return validData.filter((_, index) => index % interval === 0).slice(0, maxDataPoints);
-	};
-
-	const sampledData = sampleData();
-
 	// Format dates for better display
-	const formatData = sampledData.map((item) => ({
-		...item,
-		formattedTime: new Date(item.timestamp).toLocaleTimeString([], {
-			hour: "2-digit",
-			minute: "2-digit",
-		}),
-	}));
+	const formatData = validData.map((item) => {
+		const date = new Date(item.timestamp);
+		return {
+			...item,
+			formattedTime: `${date.toLocaleDateString([], {
+				month: "numeric",
+				day: "numeric",
+			})} ${date.toLocaleTimeString([], {
+				hour: "2-digit",
+				minute: "2-digit",
+			})}`,
+		};
+	});
+
+	// Calculate the interval for displaying X-axis ticks
+	const tickInterval = Math.ceil(formatData.length / (maxLabelCount - 1));
+
+	// Custom tick formatter to only show labels for certain indices and always the last one
+	const customTickFormatter = (value: string, index: number) => {
+		// Always show first label, labels at interval, and last label
+		if (index % tickInterval === 0 || index === formatData.length - 1) {
+			return value;
+		}
+		return "";
+	};
 
 	return (
 		<ResponsiveContainer width="100%" height={300}>
@@ -81,7 +85,7 @@ const SensorChart: React.FC<SensorChartProps> = ({
 					top: 5,
 					right: 30,
 					left: 20,
-					bottom: 5,
+					bottom: 25, // Increased to accommodate longer date format
 				}}
 			>
 				<defs>
@@ -90,21 +94,28 @@ const SensorChart: React.FC<SensorChartProps> = ({
 						<stop offset="95%" stopColor={gradientColor} stopOpacity={0.1} />
 					</linearGradient>
 				</defs>
-				<CartesianGrid strokeDasharray="3 3" />
+				<CartesianGrid strokeDasharray="3 3" className="dark:opacity-50" />
 				<XAxis
 					dataKey="formattedTime"
 					angle={-45}
 					textAnchor="end"
-					height={60}
-					tickCount={10}
+					height={80}
+					tickFormatter={customTickFormatter}
+					interval={0} // Show all ticks but hide some with formatter
+					tick={{ fill: "var(--text-primary, #333)" }}
 				/>
-				<YAxis />
+				<YAxis tick={{ fill: "var(--text-primary, #333)" }} />
 				<Tooltip
 					formatter={(value) => [
 						`${value}${isTemperature ? "°C" : "%"}`,
 						label,
 					]}
 					labelFormatter={(time) => `Time: ${time}`}
+					contentStyle={{
+						backgroundColor: "var(--card-bg, #fff)",
+						borderColor: "var(--border-color, #ccc)",
+						color: "var(--text-primary, #333)",
+					}}
 				/>
 				<Legend />
 				<Area
