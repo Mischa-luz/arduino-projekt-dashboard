@@ -1,6 +1,6 @@
 import {
-	LineChart,
-	Line,
+	AreaChart,
+	Area,
 	XAxis,
 	YAxis,
 	CartesianGrid,
@@ -27,6 +27,10 @@ const SensorChart: React.FC<SensorChartProps> = ({
 	const dataKey = isTemperature ? "temperature" : "humidity";
 	const label = isTemperature ? "Temperature (°C)" : "Humidity (%)";
 	const color = isTemperature ? "#ff6384" : "#36a2eb";
+	const gradientId = isTemperature ? "temperatureGradient" : "humidityGradient";
+	const gradientColor = isTemperature
+		? "rgb(255, 99, 132)"
+		: "rgb(54, 162, 235)";
 
 	// Check if we have enough valid data points
 	const validData = data.filter(
@@ -71,7 +75,7 @@ const SensorChart: React.FC<SensorChartProps> = ({
 
 	return (
 		<ResponsiveContainer width="100%" height={300}>
-			<LineChart
+			<AreaChart
 				data={formatData}
 				margin={{
 					top: 5,
@@ -80,6 +84,12 @@ const SensorChart: React.FC<SensorChartProps> = ({
 					bottom: 5,
 				}}
 			>
+				<defs>
+					<linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+						<stop offset="5%" stopColor={gradientColor} stopOpacity={0.8} />
+						<stop offset="95%" stopColor={gradientColor} stopOpacity={0.1} />
+					</linearGradient>
+				</defs>
 				<CartesianGrid strokeDasharray="3 3" />
 				<XAxis
 					dataKey="formattedTime"
@@ -97,16 +107,17 @@ const SensorChart: React.FC<SensorChartProps> = ({
 					labelFormatter={(time) => `Time: ${time}`}
 				/>
 				<Legend />
-				<Line
+				<Area
 					type="monotone"
 					dataKey={dataKey}
 					name={label}
 					stroke={color}
+					fill={`url(#${gradientId})`}
 					activeDot={{ r: 6 }}
 					dot={{ r: 3 }}
 					strokeWidth={2}
 				/>
-			</LineChart>
+			</AreaChart>
 		</ResponsiveContainer>
 	);
 };
