@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import TemperatureChart from "../components/TemperatureChart";
-import HumidityChart from "../components/HumidityChart";
+import SensorChart from "../components/SensorChart";
 import DashboardStats from "../components/DashboardStats";
 import {
 	fetchSensorData,
@@ -114,14 +113,14 @@ export default function Home() {
 								<h2 className="text-2xl font-semibold mb-5 text-gray-700">
 									Temperature over Time
 								</h2>
-								<TemperatureChart data={data} />
+								<SensorChart data={data} type="temperature" />
 							</div>
 
 							<div className="bg-white p-6 rounded-lg shadow-lg border border-gray-100">
 								<h2 className="text-2xl font-semibold mb-5 text-gray-700">
 									Humidity over Time
 								</h2>
-								<HumidityChart data={data} />
+								<SensorChart data={data} type="humidity" />
 							</div>
 						</div>
 					</>
