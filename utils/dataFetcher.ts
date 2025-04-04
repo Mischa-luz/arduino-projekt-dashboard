@@ -13,7 +13,15 @@ export type DataResponse = {
 
 const BACKEND_URL = "https://api-arduino-projekt.mischa-fischer.com";
 
-export type TimeScale = "1h" | "6h" | "24h" | "7d" | "30d";
+export type TimeScale =
+	| "30s"
+	| "1m"
+	| "5m"
+	| "1h"
+	| "6h"
+	| "24h"
+	| "7d"
+	| "30d";
 
 function convertBackendData(backendData: DataResponse): SensorData[] {
 	return backendData.map((item) => ({
