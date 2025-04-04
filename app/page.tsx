@@ -64,6 +64,7 @@ export default function Home() {
 							onChange={(e) => setTimeScale(e.target.value as TimeScale)}
 							className="bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 						>
+							<option value="raw">Raw</option>
 							<option value="30s">30 Seconds</option>
 							<option value="1m">Minutes</option>
 							<option value="5m">5 Minutes</option>
