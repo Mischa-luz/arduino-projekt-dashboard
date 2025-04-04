@@ -63,15 +63,11 @@ export default function Home() {
 							onChange={(e) => setTimeScale(e.target.value as TimeScale)}
 							className="bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
 						>
-							<option value="raw">Raw</option>
-							<option value="30s">30 Seconds</option>
-							<option value="1m">Minutes</option>
-							<option value="5m">5 Minutes</option>
-							<option value="1h">Hours</option>
-							<option value="6h">6 Hours</option>
-							<option value="24h">24 Hours</option>
-							<option value="7d">Weeks</option>
-							<option value="30d">Months</option>
+							{["30m", "1h", "6h", "24h", "7d", "30d", "all"].map((scale) => (
+								<option key={scale} value={scale}>
+									{scale}
+								</option>
+							))}
 						</select>
 					</div>
 				</div>
