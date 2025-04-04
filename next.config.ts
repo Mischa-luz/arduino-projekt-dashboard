@@ -9,8 +9,6 @@ setupDevPlatform().catch(console.error);
 
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-	swcMinify: false,
-};
+const nextConfig: NextConfig = {};
 
 export default nextConfig;
