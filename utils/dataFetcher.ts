@@ -25,7 +25,18 @@ export type TimeScale =
 	| "30d";
 
 function convertBackendData(backendData: DataResponse): SensorData[] {
-	return backendData.map((item) => ({
+	// Filter out any entries with invalid data
+	const validData = backendData.filter(
+		(item) =>
+			typeof item.timestamp === "number" &&
+			!Number.isNaN(item.timestamp) &&
+			typeof item.temperature === "number" &&
+			!Number.isNaN(item.temperature) &&
+			typeof item.humidity === "number" &&
+			!Number.isNaN(item.humidity),
+	);
+
+	return validData.map((item) => ({
 		timestamp: new Date(item.timestamp).toISOString(),
 		temperature: item.temperature,
 		humidity: item.humidity,
@@ -45,6 +56,13 @@ export const fetchSensorData = async (
 		}
 
 		const data = await response.json<DataResponse>();
+
+		// Ensure data is an array
+		if (!Array.isArray(data)) {
+			console.error("Invalid data format: expected array");
+			return [];
+		}
+
 		return convertBackendData(data);
 	} catch (error) {
 		console.error("Error fetching sensor data:", error);

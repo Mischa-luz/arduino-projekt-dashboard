@@ -1,180 +1,100 @@
-"use client";
+import { Line } from "react-chartjs-2";
+import {
+	Chart as ChartJS,
+	CategoryScale,
+	LinearScale,
+	PointElement,
+	LineElement,
+	Title,
+	Tooltip,
+	Legend,
+	type ChartOptions,
+} from "chart.js";
+import type { SensorData } from "../utils/dataFetcher";
 
-import { useEffect, useRef } from "react";
-import { Chart, registerables } from "chart.js";
+// Register ChartJS components
+ChartJS.register(
+	CategoryScale,
+	LinearScale,
+	PointElement,
+	LineElement,
+	Title,
+	Tooltip,
+	Legend,
+);
 
-Chart.register(...registerables);
+interface HumidityChartProps {
+	data: SensorData[];
+}
 
-type DataPoint = {
-	timestamp: string;
-	temperature: number;
-	humidity: number;
-};
+const HumidityChart: React.FC<HumidityChartProps> = ({ data }) => {
+	// Check if we have enough valid data points
+	const validData = data.filter(
+		(item) =>
+			item?.timestamp &&
+			typeof item.humidity === "number" &&
+			!Number.isNaN(item.humidity),
+	);
 
-type HumidityChartProps = {
-	data: DataPoint[];
-};
+	if (validData.length < 2) {
+		return (
+			<div className="flex justify-center items-center h-64">
+				<p className="text-gray-500">Not enough data points to display chart</p>
+			</div>
+		);
+	}
 
-export default function HumidityChart({ data }: HumidityChartProps) {
-	const chartRef = useRef<HTMLCanvasElement | null>(null);
-	const chartInstance = useRef<Chart | null>(null);
+	// Format dates for better display
+	const formatDate = (dateString: string) => {
+		const date = new Date(dateString);
+		return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+	};
 
-	useEffect(() => {
-		if (chartRef.current && data.length > 0) {
-			const ctx = chartRef.current.getContext("2d");
+	const chartData = {
+		labels: validData.map((item) => formatDate(item.timestamp)),
+		datasets: [
+			{
+				label: "Humidity (%)",
+				data: validData.map((item) => item.humidity),
+				borderColor: "rgb(53, 162, 235)",
+				backgroundColor: "rgba(53, 162, 235, 0.5)",
+				tension: 0.3, // Decrease line tension for smoother curves
+				pointRadius: 3,
+				pointHoverRadius: 5,
+			},
+		],
+	};
 
-			if (ctx) {
-				// Destroy existing chart if it exists
-				if (chartInstance.current) {
-					chartInstance.current.destroy();
-				}
-
-				// Filter out any data points that don't have valid humidity readings
-				const validData = data.filter((d) => d.humidity !== 0);
-
-				// Only proceed if we have valid data points
-				if (validData.length === 0) {
-					// Draw a message on the canvas if no valid data
-					ctx.font = "16px 'Inter', sans-serif";
-					ctx.fillStyle = "#666";
-					ctx.textAlign = "center";
-					ctx.fillText(
-						"No humidity data available",
-						chartRef.current.width / 2,
-						chartRef.current.height / 2,
-					);
-					return;
-				}
-
-				// Prepare data for the chart
-				const timestamps = validData.map((d) =>
-					new Date(d.timestamp).toLocaleTimeString(),
-				);
-				const humidities = validData.map((d) => d.humidity);
-
-				// Create new chart
-				chartInstance.current = new Chart(ctx, {
-					type: "line",
-					data: {
-						labels: timestamps,
-						datasets: [
-							{
-								label: "Humidity (%)",
-								data: humidities,
-								borderColor: "rgb(22, 163, 74)",
-								backgroundColor: "rgba(22, 163, 74, 0.1)",
-								tension: 0.3,
-								pointRadius: 4,
-								borderWidth: 3,
-								pointBackgroundColor: "rgb(22, 163, 74)",
-								fill: true,
-							},
-						],
-					},
-					options: {
-						responsive: true,
-						maintainAspectRatio: false,
-						plugins: {
-							tooltip: {
-								mode: "index",
-								intersect: false,
-								backgroundColor: "rgba(0, 0, 0, 0.8)",
-								bodyFont: {
-									size: 14,
-									family: "'Inter', 'system-ui', sans-serif",
-									weight: 500,
-								},
-								padding: 10,
-							},
-							legend: {
-								position: "top",
-								labels: {
-									font: {
-										size: 13,
-										family: "'Inter', 'system-ui', sans-serif",
-										weight: 500,
-									},
-								},
-							},
-							title: {
-								display: true,
-								text: "Humidity Over Time",
-								font: {
-									size: 16,
-									family: "'Inter', 'system-ui', sans-serif",
-									weight: 600,
-								},
-							},
-						},
-						scales: {
-							y: {
-								beginAtZero: true,
-								max: 100,
-								title: {
-									display: true,
-									text: "%",
-									font: {
-										size: 14,
-										family: "'Inter', 'system-ui', sans-serif",
-										weight: 500,
-									},
-								},
-								ticks: {
-									font: {
-										size: 12,
-										family: "'Inter', 'system-ui', sans-serif",
-									},
-								},
-							},
-							x: {
-								title: {
-									display: true,
-									text: "Time",
-									font: {
-										size: 14,
-										family: "'Inter', 'system-ui', sans-serif",
-										weight: 500,
-									},
-								},
-								ticks: {
-									font: {
-										size: 12,
-										family: "'Inter', 'system-ui', sans-serif",
-									},
-									maxRotation: 45,
-									minRotation: 45,
-								},
-							},
-						},
-					},
-				});
-			}
-		} else if (chartRef.current && data.length === 0) {
-			// Handle empty data case
-			const ctx = chartRef.current.getContext("2d");
-			if (ctx) {
-				ctx.clearRect(0, 0, chartRef.current.width, chartRef.current.height);
-				ctx.font = "16px 'Inter', sans-serif";
-				ctx.fillStyle = "#666";
-				ctx.textAlign = "center";
-				ctx.fillText(
-					"No data available",
-					chartRef.current.width / 2,
-					chartRef.current.height / 2,
-				);
-			}
-		}
-
-		return () => {
-			if (chartInstance.current) {
-				chartInstance.current.destroy();
-			}
-		};
-	}, [data]);
+	const options: ChartOptions<"line"> = {
+		responsive: true,
+		maintainAspectRatio: false,
+		plugins: {
+			legend: {
+				position: "top" as const,
+			},
+			tooltip: {
+				mode: "index",
+				intersect: false,
+			},
+		},
+		scales: {
+			x: {
+				ticks: {
+					maxRotation: 45,
+					minRotation: 45,
+				},
+			},
+			y: {
+				beginAtZero: false,
+			},
+		},
+	};
 
 	return (
-		<div className="w-full h-72">
-			<canvas ref={chartRef} />
+		<div style={{ height: "300px" }}>
+			<Line data={chartData} options={options} />
 		</div>
 	);
-}
+};
+
+export default HumidityChart;
