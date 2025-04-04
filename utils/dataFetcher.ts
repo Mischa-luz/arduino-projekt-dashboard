@@ -14,6 +14,7 @@ export type DataResponse = {
 const BACKEND_URL = "https://api-arduino-projekt.mischa-fischer.com";
 
 export type TimeScale =
+	| "raw"
 	| "30s"
 	| "1m"
 	| "5m"
