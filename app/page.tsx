@@ -4,19 +4,24 @@ import { useState, useEffect } from "react";
 import TemperatureChart from "../components/TemperatureChart";
 import HumidityChart from "../components/HumidityChart";
 import DashboardStats from "../components/DashboardStats";
-import { fetchSensorData, type SensorData } from "../utils/dataFetcher";
+import {
+	fetchSensorData,
+	type TimeScale,
+	type SensorData,
+} from "../utils/dataFetcher";
 
 export default function Home() {
 	const [data, setData] = useState<SensorData[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [timeScale, setTimeScale] = useState<TimeScale>("24h");
 
 	useEffect(() => {
 		const loadData = async () => {
 			try {
 				setLoading(true);
 				setError(null);
-				const sensorData = await fetchSensorData();
+				const sensorData = await fetchSensorData(timeScale);
 
 				if (sensorData.length === 0) {
 					setError("No data available from sensors");
@@ -36,14 +41,37 @@ export default function Home() {
 		const intervalId = setInterval(loadData, 60000);
 
 		return () => clearInterval(intervalId);
-	}, []);
+	}, [timeScale]);
 
 	return (
 		<main className="min-h-screen p-8 bg-gradient-to-br from-gray-50 to-gray-100">
 			<div className="max-w-7xl mx-auto">
-				<h1 className="text-4xl font-bold mb-8 text-gray-800 tracking-tight">
-					Arduino Sensor Dashboard
-				</h1>
+				<div className="flex justify-between items-center mb-8">
+					<h1 className="text-4xl font-bold text-gray-800 tracking-tight">
+						Arduino Sensor Dashboard
+					</h1>
+
+					<div className="flex items-center space-x-2">
+						<label
+							htmlFor="timeScale"
+							className="text-sm font-medium text-gray-700"
+						>
+							Time Scale:
+						</label>
+						<select
+							id="timeScale"
+							value={timeScale}
+							onChange={(e) => setTimeScale(e.target.value as TimeScale)}
+							className="bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+						>
+							<option value="1h">Last Hour</option>
+							<option value="6h">Last 6 Hours</option>
+							<option value="24h">Last 24 Hours</option>
+							<option value="7d">Last Week</option>
+							<option value="30d">Last Month</option>
+						</select>
+					</div>
+				</div>
 
 				{loading ? (
 					<div className="flex justify-center items-center h-64">
